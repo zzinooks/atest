@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: ${FGC_TEST_DB_URL}
+    username: fgc
+    password: fgc_dev_only
+fgc:
+  scheduling.enabled: false
+  access-token-ttl: P1D  # 시뮬레이션 시계를 몇 시간씩 진행하므로 길게. 만료 자체는 AuthAndAccessIT 에서 검증
+  jwt-secret: test-only-jwt-secret-0123456789abcdef0123456789
+  encryption-key: AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=
+  notion:
+    token: ""
