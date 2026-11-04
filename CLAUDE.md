@@ -13,8 +13,8 @@
 | STEP | 내용 | 상태 |
 |---|---|---|
 | 0 | 환경 · REA MCP 점검, CLAUDE.md, 문서 구조 | 완료 (보고서: docs/research/STEP0-environment-and-rea.md) |
-| 1 | REA MCP 및 데이터 접근 경로 조사 | 대기 (사용자 승인 필요) |
-| 2 | 실제 기기 데이터 수집 PoC | 대기 |
+| 1 | REA MCP 및 데이터 접근 경로 조사 | 완료 (docs/research/STEP1-*.md, ADR-0002) |
+| 2 | 데이터 수집 PoC — 실기기 없음 → 가상 CGM 에뮬레이터로 대체 | 대기 (사용자 승인 필요) |
 | 3~8 | 설계 · Backend · Android · 알람 · Notion · 통합 테스트 | 대기 |
 
 사용자가 승인하지 않은 다음 STEP의 대규모 구현은 하지 않는다.
@@ -26,9 +26,16 @@
 ├── docs/            # 요구사항·조사·설계·ADR·테스트·배포 문서 (docs/README.md 참고)
 ├── backend/         # Spring Boot (Java 21, Gradle) — STEP 4에서 생성
 ├── android/         # Kotlin + Jetpack Compose 단일 앱(환자/가족 역할 분기) — STEP 5에서 생성
-├── poc/             # STEP 2 데이터 수집 PoC (운영 코드와 분리)
+├── poc/
+│   ├── cgm-emulator/  # 가상 CGM 에뮬레이터 (Java 21, Gradle) — 실기기 대체, ADR-0002
+│   └── rea-practice/  # HAR 기록·분석 연습 도구
 └── TestGit/         # 기존 학습용 Spring 예제. 이 프로젝트와 무관 — 수정하지 않는다
 ```
+
+## 프로젝트 성격 (2026-11-04 사용자 결정)
+- **연습 프로젝트**. 공식 앱(바로잰 Care) 기능도 함께 구현한다 (docs/requirements/REQ-001).
+- 실물 기기·계정 없음 → 데이터는 `poc/cgm-emulator`. 화면에 "가상 데이터" 표시. 실기기 검증 전까지 "실제 데이터 수집"은 미완료.
+- 바로잰 비공개 API·APK 역분석은 하지 않는다 (권한 없음, ADR-0001/0002).
 
 ## 절대 규칙
 - **데이터 출처 구분**: 측정 시각(`measuredAt`)과 수신 시각(`receivedAt`)을 항상 분리한다. 오래된 값으로 현재 상태를 판단하지 않는다.
@@ -58,4 +65,6 @@
 ## 개발 환경 메모 (2026-11-04 기준, 클라우드 컨테이너)
 - 있음: OpenJDK 21, Maven 3.9.11, Gradle 8.14.3, Node 22, PostgreSQL 16 클라이언트, Docker
 - 없음: Android SDK, adb, Kotlin CLI, 실물 기기 → Android 빌드·실기기 검증은 사용자 PC 필요
-- REA MCP: 미연결 (STEP 0 보고서 참고)
+- REA MCP: 미연결. `npx rea-agents` 실행이 자동 권한 검사로 차단됨 → HAR 기록·분석 도구로 대체 (STEP1-rea-practice)
+- Android 에뮬레이터: `/dev/kvm` 없음 → 이 컨테이너에서 실행 불가
+- Maven Central이 가끔 429를 돌려준다 → 잠시 후 재시도
