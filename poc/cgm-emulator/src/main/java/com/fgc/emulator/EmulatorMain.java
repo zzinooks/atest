@@ -18,6 +18,7 @@ public final class EmulatorMain {
         String host = "127.0.0.1";
         double dup = 0, err = 0;
         long sensorAgeHours = 24;
+        Instant sensorStart = null;
         for (int i = 0; i < args.length; i += 2) {
             String v = args[i + 1];
             switch (args[i]) {
@@ -29,6 +30,8 @@ public final class EmulatorMain {
                 case "--duplicate-rate" -> dup = Double.parseDouble(v);
                 case "--error-rate" -> err = Double.parseDouble(v);
                 case "--sensor-age-hours" -> sensorAgeHours = Long.parseLong(v);
+                // 재시작해도 같은 센서 타임라인(측정 시각·ID)을 재현하려면 부착 시각을 고정한다
+                case "--sensor-start" -> sensorStart = Instant.parse(v);
                 default -> throw new IllegalArgumentException("unknown option " + args[i]);
             }
         }
@@ -44,7 +47,7 @@ public final class EmulatorMain {
         EmulatorConfig config = EmulatorConfig.defaults(seed, scenario).withFaults(dup, err);
         Instant now = Instant.now();
         SimClock clock = SimClock.scaled(now, speed);
-        VirtualSensor sensor = new VirtualSensor(config, now.minus(Duration.ofHours(sensorAgeHours)));
+        VirtualSensor sensor = new VirtualSensor(config, sensorStart != null ? sensorStart : now.minus(Duration.ofHours(sensorAgeHours)));
         EmulatorServer server = new EmulatorServer(config, clock, sensor, user, pass);
         int actual = server.start(host, port);
 

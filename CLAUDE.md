@@ -14,8 +14,13 @@
 |---|---|---|
 | 0 | 환경 · REA MCP 점검, CLAUDE.md, 문서 구조 | 완료 (보고서: docs/research/STEP0-environment-and-rea.md) |
 | 1 | REA MCP 및 데이터 접근 경로 조사 | 완료 (docs/research/STEP1-*.md, ADR-0002) |
-| 2 | 데이터 수집 PoC — 실기기 없음 → 가상 CGM 에뮬레이터로 대체 | 대기 (사용자 승인 필요) |
-| 3~8 | 설계 · Backend · Android · 알람 · Notion · 통합 테스트 | 대기 |
+| 2 | 데이터 수집 PoC (에뮬레이터 대체) | 완료 — 실제 바로잰 데이터는 미검증 (STEP2-poc-report) |
+| 3 | 아키텍처·DB·API 설계 | 완료 (ARCH-001, DB-001, API-001, ADR-0003/0004) |
+| 4·6·7 | Backend · 알람 엔진 · Notion | 완료 — 테스트 32개 통과 (BACKEND-001). Notion 실연동 미검증 |
+| 5 | Android | :core 완료(14 테스트, 실 Backend 계약 통과) / :app 작성했으나 빌드 미검증 (ANDROID-001) |
+| 8 | 통합 테스트·운영 준비 | 완료 범위·미완료 사유: STEP8-final-report, TEST-001, SEC-001, DEPLOY-001, ADR-0005 |
+
+2026-11-04 사용자 지시: "결정을 믿고 될 때까지 모든 단계를 진행" → 단계별 승인 없이 진행함.
 
 사용자가 승인하지 않은 다음 STEP의 대규모 구현은 하지 않는다.
 
@@ -24,8 +29,9 @@
 /
 ├── CLAUDE.md
 ├── docs/            # 요구사항·조사·설계·ADR·테스트·배포 문서 (docs/README.md 참고)
-├── backend/         # Spring Boot (Java 21, Gradle) — STEP 4에서 생성
-├── android/         # Kotlin + Jetpack Compose 단일 앱(환자/가족 역할 분기) — STEP 5에서 생성
+├── backend/         # Spring Boot 3.5 (Java 21, Gradle, Spring JDBC, Flyway) — docs/backend/BACKEND-001
+├── android/         # :core(Kotlin/JVM, 테스트됨) + :app(Compose, SDK 있을 때만 포함) — docs/android/ANDROID-001
+├── deploy/          # docker-compose(Backend+PostgreSQL+Caddy), backup/restore 스크립트
 ├── poc/
 │   ├── cgm-emulator/  # 가상 CGM 에뮬레이터 (Java 21, Gradle) — 실기기 대체, ADR-0002
 │   └── rea-practice/  # HAR 기록·분석 연습 도구
@@ -67,4 +73,11 @@
 - 없음: Android SDK, adb, Kotlin CLI, 실물 기기 → Android 빌드·실기기 검증은 사용자 PC 필요
 - REA MCP: 미연결. `npx rea-agents` 실행이 자동 권한 검사로 차단됨 → HAR 기록·분석 도구로 대체 (STEP1-rea-practice)
 - Android 에뮬레이터: `/dev/kvm` 없음 → 이 컨테이너에서 실행 불가
-- Maven Central이 가끔 429를 돌려준다 → 잠시 후 재시도
+- Maven Central 이 429 를 돌려준다 → `~/.gradle/init.d/maven-mirror.gradle` 로 Google 미러 우선 사용 (컨테이너 전용 설정)
+- 네트워크 정책 차단: `dl.google.com`(Android SDK·Google Maven), `api.notion.com`
+- Docker 데몬 없음 → 테스트 DB 는 로컬 PostgreSQL 16 (`/var/lib/postgresql/fgc-dev`, 포트 5433, DB fgc / fgc_test, user fgc)
+
+## 자주 쓰는 명령
+- 에뮬레이터 테스트: `cd poc/cgm-emulator && gradle test`
+- Backend 테스트: `cd backend && gradle test` (PostgreSQL 필요, FGC_TEST_DB_URL)
+- Android core 테스트: `cd android && gradle :core:test` (실 Backend 계약: `FGC_LIVE_BASE_URL=http://127.0.0.1:8080`)

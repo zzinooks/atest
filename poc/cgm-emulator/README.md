@@ -23,7 +23,7 @@ cd poc/cgm-emulator
 export EMU_USERNAME=patient01 EMU_PASSWORD='<직접 정한 값>'   # 없으면 임의 비밀번호를 만들어 출력
 gradle run --args="--scenario NIGHT_HYPO --speed 60 --port 8090 --duplicate-rate 0.05 --error-rate 0.02"
 ```
-옵션: `--scenario`, `--speed`(배속), `--port`, `--seed`, `--host`(기본 127.0.0.1), `--duplicate-rate`, `--error-rate`, `--sensor-age-hours`(기본 24)
+옵션: `--scenario`, `--speed`(배속), `--port`, `--seed`, `--host`(기본 127.0.0.1), `--duplicate-rate`, `--error-rate`, `--sensor-age-hours`(기본 24), `--sensor-start`(ISO 시각. 재시작해도 같은 측정 시각·ID 를 재현)
 
 ## API (가상)
 | 메서드 · 경로 | 설명 |

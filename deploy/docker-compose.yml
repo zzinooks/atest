@@ -1,0 +1,38 @@
+# 단일 VM 운영 구성: Backend + PostgreSQL + HTTPS(Caddy, Let's Encrypt 자동). 비밀값은 .env (저장소에 넣지 않음)
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fgc
+      POSTGRES_USER: fgc
+      POSTGRES_PASSWORD: ${FGC_DB_PASSWORD:?set in .env}
+    volumes: [ "pgdata:/var/lib/postgresql/data" ]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U fgc"], interval: 10s, retries: 5 }
+
+  backend:
+    build: ../backend
+    restart: unless-stopped
+    depends_on: { db: { condition: service_healthy } }
+    environment:
+      FGC_DB_URL: jdbc:postgresql://db:5432/fgc
+      FGC_DB_PASSWORD: ${FGC_DB_PASSWORD}
+      FGC_JWT_SECRET: ${FGC_JWT_SECRET:?set in .env}
+      FGC_ENCRYPTION_KEY: ${FGC_ENCRYPTION_KEY:?set in .env}
+      FGC_FCM_CREDENTIALS: /run/secrets/fcm.json
+      NOTION_TOKEN: ${NOTION_TOKEN:-}
+      NOTION_DAILY_DB_ID: ${NOTION_DAILY_DB_ID:-}
+      NOTION_WEEKLY_DB_ID: ${NOTION_WEEKLY_DB_ID:-}
+    volumes: [ "./secrets/fcm.json:/run/secrets/fcm.json:ro" ]
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: [ "80:80", "443:443" ]
+    command: caddy reverse-proxy --from ${FGC_DOMAIN:?set in .env} --to backend:8080
+    volumes: [ "caddy_data:/data" ]
+    depends_on: [ backend ]
+
+volumes:
+  pgdata: {}
+  caddy_data: {}
