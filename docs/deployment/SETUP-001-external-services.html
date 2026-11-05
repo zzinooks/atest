@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>외부 서비스 준비 가이드</title>
+<style>
+:root {
+  --bg: #f7f6f2; --surface: #ffffff; --ink: #1d1f23; --muted: #5d6470; --line: #e3e1da;
+  --accent: #1f6feb; --accent-soft: #e8f0fe; --warn: #9a4b00; --warn-soft: #fff4e5;
+  --code-bg: #f1f0ea; --ok: #1a7f37;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171a; --surface: #1d2025; --ink: #e8e9eb; --muted: #a2a8b3; --line: #2e3238;
+    --accent: #6ea8fe; --accent-soft: #1c2a40; --warn: #ffb35c; --warn-soft: #2e2416;
+    --code-bg: #262a30; --ok: #56d364;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15171a; --surface: #1d2025; --ink: #e8e9eb; --muted: #a2a8b3; --line: #2e3238;
+  --accent: #6ea8fe; --accent-soft: #1c2a40; --warn: #ffb35c; --warn-soft: #2e2416;
+  --code-bg: #262a30; --ok: #56d364;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.7 "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 32px; max-width: 1160px; margin: 0 auto; padding: 32px 24px 80px; }
+nav { position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow: auto; }
+nav .brand { font-weight: 700; font-size: 15px; margin: 0 0 4px; }
+nav .sub { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+nav ol { list-style: none; padding: 0; margin: 0; counter-reset: n; }
+nav li a { display: block; padding: 6px 10px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 14px; line-height: 1.4; }
+nav li a:hover, nav li a.active { background: var(--accent-soft); color: var(--accent); }
+.progress { margin: 20px 0 0; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 13px; color: var(--muted); }
+.bar { height: 6px; border-radius: 3px; background: var(--line); margin-top: 8px; overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .3s; }
+header.hero h1 { font-size: 30px; line-height: 1.3; margin: 0 0 8px; letter-spacing: -0.02em; }
+header.hero p { color: var(--muted); margin: 0 0 24px; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 8px 28px 20px; margin: 0 0 20px; }
+h2 { font-size: 22px; margin: 20px 0 8px; letter-spacing: -0.01em; }
+h3 { font-size: 17px; margin: 26px 0 6px; }
+p { margin: 8px 0; }
+main, nav { min-width: 0; }
+p, li, td, th { overflow-wrap: anywhere; }
+ul, ol { padding-left: 22px; margin: 8px 0; }
+li { margin: 4px 0; }
+a { color: var(--accent); }
+strong { font-weight: 700; }
+code { font: 0.88em/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; background: var(--code-bg); padding: 1px 6px; border-radius: 5px; word-break: break-all; }
+.code { position: relative; margin: 10px 0; }
+.code pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 0; }
+.code pre code { background: none; padding: 0; font-size: 13.5px; word-break: normal; white-space: pre; }
+.copy { position: absolute; top: 8px; right: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-size: 12px; padding: 3px 9px; border-radius: 6px; cursor: pointer; }
+.copy:hover { color: var(--accent); border-color: var(--accent); }
+.table { overflow-x: auto; margin: 10px 0; border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { background: var(--code-bg); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+.note { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 8px 16px; border-radius: 0 10px 10px 0; margin: 12px 0; }
+.note.warn { border-color: var(--warn); background: var(--warn-soft); }
+.checklist { list-style: none; padding: 0; }
+.checklist li { margin: 0; border-bottom: 1px solid var(--line); }
+.checklist label { display: flex; gap: 12px; align-items: flex-start; padding: 10px 4px; cursor: pointer; }
+.checklist input { width: 20px; height: 20px; margin-top: 3px; accent-color: var(--ok); flex: none; }
+.checklist input:checked + span { color: var(--muted); text-decoration: line-through; }
+.theme { float: right; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 8px; padding: 4px 10px; font-size: 13px; cursor: pointer; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); padding: 16px 16px 60px; gap: 8px; }
+  nav { position: static; max-height: none; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 14px; }
+  nav ol { display: none; }
+  nav.open ol { display: block; }
+  .step { padding: 4px 16px 14px; }
+  header.hero h1 { font-size: 24px; }
+}
+@media (min-width: 861px) { .toc-toggle { display: none; } }
+.toc-toggle { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 6px 12px; font-size: 14px; cursor: pointer; margin-top: 4px; }
+@media print { nav, .copy, .theme { display: none; } .layout { display: block; } .step { break-inside: avoid-page; } }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav id="nav">
+    <p class="brand">가족 혈당 케어</p>
+    <p class="sub">외부 서비스 준비 가이드</p>
+    <button class="toc-toggle" type="button" id="tocToggle">목차 보기</button>
+    <ol><li><a href="#s1">0. 큰 그림 — 네 가지가 왜 필요할까?</a></li><li><a href="#s2">1. Firebase 프로젝트 만들기 (🏤 우체국 등록)</a></li><li><a href="#s3">2. Notion 통합 토큰 만들기 (🔑 일기장 열쇠)</a></li><li><a href="#s4">3. VM 만들기 (💻 24시간 켜진 빌린 컴퓨터)</a></li><li><a href="#s5">4. 도메인 준비 (🏠 집 주소)</a></li><li><a href="#s6">5. 서버에 모두 꽂기 (이삿짐 넣기)</a></li><li><a href="#s7">6. 앱 만들기 (휴대폰에 설치)</a></li><li><a href="#s8">7. 마지막 체크리스트</a></li></ol>
+    <div class="progress"><span id="progText">체크리스트 0 / 0</span><div class="bar"><i id="progBar"></i></div></div>
+  </nav>
+  <main>
+    <header class="hero">
+      <button class="theme" type="button" id="themeBtn">테마</button>
+      <h1>SETUP-001 외부 서비스 준비 가이드 (아주 쉽게)</h1>
+      <p>Firebase · Notion · 서버(VM) · 도메인을 처음 해 보는 사람도 따라 할 수 있게 정리했습니다. 맨 아래 체크리스트는 이 브라우저에 진행 상황이 저장됩니다.</p>
+    </header>
+    <ul><li>작성 목적: Firebase 프로젝트, Notion 통합 토큰, 서버(VM), 도메인을 처음 해보는 사람도 따라 할 수 있게 설명한다.</li><li>작성 일자: 2026-11-05</li><li>관련: DEPLOY-001, ADR-0005, BACKEND-001, ANDROID-001</li><li>같은 내용의 HTML 판: <code>SETUP-001-external-services.html</code> (브라우저로 열면 체크박스로 진행 상황을 표시할 수 있음)</li></ul>
+<aside class="note"><p>화면 메뉴 이름은 서비스가 자주 바꾼다. 이 문서의 버튼 이름이 조금 달라도 비슷한 이름을 찾으면 된다. 이 문서의 화면 경로는 2026-11 기준 기억·공개 문서에 따른 것이며, 실제로 클릭해 보며 검증하지는 않았다.</p></aside>
+<section class="step" id="s1"><h2>0. 큰 그림 — 네 가지가 왜 필요할까?</h2>
+<p>우리 서비스를 <strong>동네 소식지 배달</strong>에 비유하면 이렇다.</p>
+<div class="table"><table><thead><tr><th>준비물</th><th>비유</th><th>하는 일</th></tr></thead><tbody><tr><td><strong>Firebase 프로젝트</strong></td><td>🏤 우체국</td><td>서버가 "할머니 혈당이 낮아요!" 알림을 가족 휴대폰으로 <strong>배달</strong>해 준다</td></tr><tr><td><strong>Notion 통합 토큰</strong></td><td>🔑 일기장 열쇠</td><td>서버 로봇이 내 Notion 일기장에 <strong>하루 요약을 대신 써 준다</strong></td></tr><tr><td><strong>VM (가상 서버)</strong></td><td>💻 24시간 켜진 빌린 컴퓨터</td><td>1분마다 혈당을 가져오고, 알림을 판단하는 <strong>우리 서버가 사는 집</strong></td></tr><tr><td><strong>도메인</strong></td><td>🏠 집 주소</td><td><code>152.67.x.x</code> 같은 숫자 대신 <code>my-fgc.duckdns.org</code> 처럼 <strong>기억하기 쉬운 주소</strong>. HTTPS(봉인된 편지)를 쓰려면 꼭 필요</td></tr></tbody></table></div>
+<p><strong>순서가 중요하다.</strong> 아래 순서대로 하면 막히지 않는다.</p>
+<ol><li>Firebase (15분) → 2. Notion (15분) → 3. VM (30~60분) → 4. 도메인 (15분) → 5. 서버에 모두 꽂기 (20분) → 6. 앱 빌드 (20분)</li></ol>
+<h3>🔒 절대 규칙 세 가지 (먼저 읽기)</h3>
+<ol><li><strong>비밀 파일·비밀 글자는 GitHub에 올리지 않는다.</strong> 서비스 계정 키(<code>.json</code>), Notion 토큰(<code>ntn_...</code>), <code>.env</code> 파일, SSH 키가 여기에 해당한다. (<code>.gitignore</code>에 이미 막아 두었지만 직접 <code>git add</code> 하면 올라간다.)</li><li>비밀 글자를 채팅·메신저·스크린샷으로 남에게 보내지 않는다. Claude에게도 붙여 넣지 말고, 서버의 <code>.env</code>에 직접 입력한다.</li><li>실수로 노출됐으면 <strong>즉시 새로 만들고 옛것은 삭제</strong>한다 (각 단계 끝의 "잃어버렸을 때" 참고).</li></ol>
+</section>
+<section class="step" id="s2"><h2>1. Firebase 프로젝트 만들기 (🏤 우체국 등록)</h2>
+<h3>1-1. 무엇을 얻게 되나</h3>
+<ul><li><code>google-services.json</code> — <strong>앱용 주소표</strong>. 앱이 "나는 이 우체국 소속이야"라고 말할 때 쓴다. → <code>android/app/</code> 에 넣는다.</li><li>서비스 계정 키 <code>.json</code> — <strong>서버용 인감도장</strong>. 서버가 "이 편지 보내 주세요"라고 우체국에 요청할 때 찍는다. → 서버의 <code>deploy/secrets/fcm.json</code> 에 넣는다. <strong>인감도장이라 절대 비밀.</strong></li></ul>
+<h3>1-2. 프로젝트 만들기</h3>
+<ol><li>컴퓨터 브라우저로 <a href="https://console.firebase.google.com" target="_blank" rel="noopener">https://console.firebase.google.com</a> 접속 → Google 계정으로 로그인<ul><li>회사·학교 계정 말고 <strong>개인 Gmail</strong> 을 권장 (회사 계정은 키 만들기가 막혀 있는 경우가 있다).</li></ul></li><li><strong>"프로젝트 만들기"(Create a project)</strong> 클릭</li><li>이름: <code>family-glucose-care</code> (아무거나 괜찮다)</li><li>Google 애널리틱스: <strong>사용 안 함</strong>으로 꺼도 된다 (건강 서비스는 불필요한 수집을 줄이는 게 좋다)</li><li><strong>"프로젝트 만들기"</strong> → 1분 기다리기 → "계속"</li></ol>
+<h3>1-3. Android 앱 등록 → <code>google-services.json</code> 받기</h3>
+<ol><li>프로젝트 첫 화면에서 <strong>Android 아이콘</strong>(로봇 모양) 클릭</li><li><strong>Android 패키지 이름</strong>: 정확히 <code>com.fgc.app</code> 입력 ← 한 글자라도 틀리면 알림이 안 온다</li><li>앱 닉네임: <code>가족 혈당 케어</code> (선택)</li><li>SHA-1: 비워도 된다 (푸시 알림에는 필요 없음)</li><li><strong>"앱 등록"</strong> → <strong><code>google-services.json</code> 다운로드</strong></li><li>나머지 "SDK 추가" 안내는 <strong>건너뛰기</strong> (우리 코드에 이미 들어 있다) → "콘솔로 이동"</li><li>받은 파일을 <code>android/app/google-services.json</code> 위치에 둔다.<ul><li>이 파일은 <code>.gitignore</code> 로 커밋이 막혀 있다. 그대로 두면 된다.</li></ul></li></ol>
+<h3>1-4. 서비스 계정 키(서버용 인감도장) 만들기</h3>
+<ol><li>왼쪽 위 <strong>톱니바퀴 ⚙️ → 프로젝트 설정</strong></li><li>위쪽 탭에서 <strong>"서비스 계정"(Service accounts)</strong></li><li>"Firebase Admin SDK" 화면에서 <strong>"새 비공개 키 생성"(Generate new private key)</strong> → "키 생성"</li><li><code>family-glucose-care-firebase-adminsdk-xxxx.json</code> 같은 파일이 내려받아진다.</li><li>이 파일은 <strong>5장에서 서버로 옮길 때까지</strong> 내 컴퓨터의 안전한 폴더에만 둔다.<ul><li>저장소 폴더(<code>atest/</code>) 안에 두지 않는다.</li></ul></li></ol>
+<h3>1-5. 확인</h3>
+<ul><li>"Cloud Messaging" 기능은 새 프로젝트에 기본으로 켜져 있다.</li><li><strong>프로젝트 설정 → 클라우드 메시징</strong> 탭에서 "Firebase Cloud Messaging API (V1) 사용 설정됨"이 보이면 OK.</li></ul>
+<h3>1-6. 잃어버렸을 때 / 노출됐을 때</h3>
+<ul><li>프로젝트 설정 → 서비스 계정 → "Google Cloud에서 서비스 계정 관리" → 해당 계정의 <strong>키 탭에서 옛 키 삭제</strong> → 1-4를 다시 해서 새 키를 받는다.</li></ul>
+<h3>💰 비용</h3>
+<p>FCM 알림 전송은 무료다. (분당 전송량 한도는 있지만 가족 단위 사용에는 충분하다.)</p>
+</section>
+<section class="step" id="s3"><h2>2. Notion 통합 토큰 만들기 (🔑 일기장 열쇠)</h2>
+<h3>2-1. 무엇을 얻게 되나</h3>
+<ul><li><strong>통합 비밀(Internal Integration Secret)</strong> — <code>ntn_</code> 으로 시작하는 긴 글자 → <code>NOTION_TOKEN</code></li><li><strong>일별 요약 데이터베이스 ID</strong>(32글자) → <code>NOTION_DAILY_DB_ID</code></li><li><strong>주간 요약 데이터베이스 ID</strong>(32글자) → <code>NOTION_WEEKLY_DB_ID</code></li></ul>
+<p>열쇠(토큰)를 만들어도 <strong>문을 열어 준 방(데이터베이스)에만</strong> 들어갈 수 있다. 그래서 "열쇠 만들기"와 "방 문 열어 주기(연결)" 두 단계가 있다.</p>
+<h3>2-2. 열쇠(통합) 만들기</h3>
+<ol><li><a href="https://www.notion.so/profile/integrations" target="_blank" rel="noopener">https://www.notion.so/profile/integrations</a> 접속 (Notion 로그인 상태)<ul><li>안 열리면 Notion 왼쪽 아래 <strong>설정 → 연결(Connections) → "통합 개발 또는 관리"</strong> 를 찾는다.</li></ul></li><li><strong>"새 통합"(New integration)</strong> 클릭</li><li>이름: <code>FGC 혈당 요약</code>, 연결할 워크스페이스 선택, 유형: <strong>내부(Internal)</strong></li><li><strong>저장</strong> → 화면의 <strong>"내부 통합 비밀"</strong> 옆 <strong>표시 → 복사</strong><ul><li>지금은 메모장에 잠깐만 두고, 5장에서 서버 <code>.env</code> 에 넣은 뒤 메모는 지운다.</li></ul></li><li><strong>기능(Capabilities)</strong> 탭: "콘텐츠 읽기 / 업데이트 / 삽입" 세 개만 체크<ul><li>"사용자 정보"는 <strong>정보 없음</strong>으로 둔다. 필요 없는 권한은 주지 않는다.</li></ul></li></ol>
+<h3>2-3. 방(데이터베이스) 두 개 만들기</h3>
+<p>Notion에서 새 페이지 → <code>/database</code> 입력 → <strong>"데이터베이스 - 전체 페이지"</strong> 선택. 이름을 <code>혈당 일별 요약</code> 으로 하고, 아래 열(속성)을 <strong>이름·종류 그대로</strong> 만든다. <strong>대소문자까지 똑같아야 한다</strong> — 서버가 이 이름으로 칸을 찾는다.</p>
+<div class="table"><table><thead><tr><th>속성 이름</th><th>종류</th><th>들어가는 값</th></tr></thead><tbody><tr><td><code>Name</code></td><td>제목 (기본으로 있는 칸, 이름만 <code>Name</code> 으로)</td><td>"2026-11-04 혈당 요약"</td></tr><tr><td><code>Date</code></td><td>날짜</td><td>요약한 날</td></tr><tr><td><code>Patient</code></td><td>텍스트</td><td>환자 이름</td></tr><tr><td><code>Readings</code></td><td>숫자</td><td>측정 횟수</td></tr><tr><td><code>Coverage</code></td><td>숫자</td><td>데이터 충족률(%)</td></tr><tr><td><code>Mean</code></td><td>숫자</td><td>평균</td></tr><tr><td><code>Min</code></td><td>숫자</td><td>최저</td></tr><tr><td><code>Max</code></td><td>숫자</td><td>최고</td></tr><tr><td><code>SD</code></td><td>숫자</td><td>표준편차</td></tr><tr><td><code>CV</code></td><td>숫자</td><td>변동계수(%)</td></tr><tr><td><code>TIR</code></td><td>숫자</td><td>목표 범위 비율(%)</td></tr><tr><td><code>TBR</code></td><td>숫자</td><td>낮음 비율(%)</td></tr><tr><td><code>TAR</code></td><td>숫자</td><td>높음 비율(%)</td></tr></tbody></table></div>
+<p>같은 방법으로 <code>혈당 주간 요약</code> 데이터베이스를 하나 더 만든다. 속성은 위와 <strong>완전히 같다</strong>.</p>
+<aside class="note"><p>팁: 일별 DB를 다 만든 뒤 페이지 메뉴의 <strong>"복제"</strong> 를 쓰면 주간 DB를 빨리 만들 수 있다 (복제 후 이름만 바꾸기).</p></aside>
+<h3>2-4. 방 문 열어 주기 (연결)</h3>
+<p>각 데이터베이스 페이지에서:</p>
+<ol><li>오른쪽 위 <strong>••• (점 세 개) → 연결(Connections) → 연결 추가</strong></li><li><code>FGC 혈당 요약</code> 선택 → 확인</li></ol>
+<p><strong>이걸 빼먹으면</strong> 서버 로그에 <code>HTTP 404</code> 가 찍히고 요약이 안 써진다. 가장 흔한 실수다.</p>
+<h3>2-5. 데이터베이스 ID 찾기</h3>
+<ol><li>데이터베이스 페이지에서 <strong>••• → 링크 복사</strong></li><li>주소가 이렇게 생겼다:<br><code>https://www.notion.so/내워크스페이스/</code><strong><code>1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d</code></strong><code>?v=...</code></li><li><strong><code>?v=</code> 앞의 32글자</strong>가 데이터베이스 ID다. 일별·주간 각각 적어 둔다.<ul><li>주소가 <code>혈당-일별-요약-1a2b...</code> 처럼 제목이 붙어 있으면 <strong>맨 끝 32글자</strong>만 쓴다.</li></ul></li></ol>
+<h3>2-6. 잃어버렸을 때 / 노출됐을 때</h3>
+<p>통합 설정 화면 → 비밀 옆 <strong>"새로 고침"(Refresh/Regenerate)</strong> → 옛 토큰은 즉시 무효가 된다 → 서버 <code>.env</code> 를 새 값으로 바꾸고 재시작.</p>
+<h3>⚠️ 알아 둘 점</h3>
+<ul><li>환자가 앱 설정에서 <strong>"Notion 요약 기록 동의"</strong> 를 눌러야 그 환자의 요약이 써진다. 건강정보가 외부 서비스로 나가기 때문이다.</li><li>Notion 에 쓰는 것은 <strong>요약</strong>뿐이다. 원본 혈당은 우리 DB에만 있다.</li><li>우리 서버는 Notion API 버전 <code>2022-06-28</code> 을 쓴다. 그래서 위처럼 <strong>평범한 데이터베이스 하나</strong>로 만들어야 한다. 한 데이터베이스에 여러 "데이터 소스"를 붙이는 새 기능은 쓰지 않는다.</li></ul>
+<h3>💰 비용</h3>
+<p>Notion 무료 요금제로도 API를 쓸 수 있다. 하루에 몇 번만 쓰므로 요청 한도(평균 초당 3회)에 걸리지 않는다.</p>
+</section>
+<section class="step" id="s4"><h2>3. VM 만들기 (💻 24시간 켜진 빌린 컴퓨터)</h2>
+<p>우리 서버는 <strong>잠들면 안 된다</strong> (잠들면 저혈당 알림도 멈춘다). 그래서 "요청이 없으면 잠드는" 무료 서비스(Render 무료 등) 대신 <strong>항상 켜진 컴퓨터</strong>를 빌린다. 여기서는 무료인 <strong>Oracle Cloud Always Free</strong> 로 설명한다. 이유와 위험은 <code>DEPLOY-001</code> 참고.</p>
+<h3>3-1. 가입</h3>
+<ol><li><a href="https://www.oracle.com/cloud/free/" target="_blank" rel="noopener">https://www.oracle.com/cloud/free/</a> → <strong>"무료로 시작하기"</strong></li><li>이메일·이름·주소 입력, <strong>신용카드 등록</strong>(본인 확인용, 무료 범위에서는 청구되지 않음)</li><li><strong>홈 리전(Home Region)</strong> 선택: <strong>대한민국 춘천</strong> 또는 <strong>대한민국 서울</strong><ul><li>⚠️ <strong>나중에 못 바꾼다.</strong> 가까운 곳을 고른다.</li></ul></li><li>가입 완료까지 몇 분~몇 시간 걸릴 수 있다 (메일 확인).</li></ol>
+<h3>3-2. 열쇠 꾸러미(SSH 키) 준비</h3>
+<p>SSH 키는 빌린 컴퓨터에 들어가는 <strong>현관 열쇠</strong>다. 인스턴스를 만들 때 Oracle이 만들어 주는 것을 내려받으면 된다 (3-3의 5번).</p>
+<h3>3-3. 컴퓨터(인스턴스) 만들기</h3>
+<ol><li>Oracle 콘솔 왼쪽 위 ☰ → <strong>컴퓨트(Compute) → 인스턴스(Instances) → 인스턴스 생성</strong></li><li>이름: <code>fgc-server</code></li><li><strong>이미지</strong>: "편집" → <strong>Canonical Ubuntu 24.04</strong></li><li><strong>셰이프(Shape)</strong>: "셰이프 변경" → <strong>Ampere → VM.Standard.A1.Flex</strong><ul><li>OCPU <strong>1~2개</strong>, 메모리 <strong>6~12GB</strong> 정도면 충분하다.</li><li><strong>"Always Free 적격"</strong> 표시가 붙은 것만 고른다. 표시가 없으면 돈이 나간다.</li></ul></li><li><strong>SSH 키 추가</strong>: <strong>"개인 키 저장"</strong> 버튼을 눌러 <code>ssh-key-xxxx.key</code> 파일을 꼭 내려받는다.<ul><li>이 파일이 없으면 다시는 못 들어간다.</li></ul></li><li>네트워킹: 기본값(새 VCN, <strong>공용 IPv4 주소 할당</strong> 체크)</li><li><strong>생성</strong> → 상태가 초록색 <strong>"실행 중"</strong> 이 되면 <strong>공용 IP 주소</strong>(예: <code>152.67.12.34</code>)를 적어 둔다.</li></ol>
+<aside class="note"><p>"Out of capacity(용량 부족)"가 뜨면: 몇 시간 뒤 다시 하거나, OCPU를 1개로 줄여 본다. 인기 지역에서 흔한 일이다.</p></aside>
+<h3>3-4. 대문 열기 — 방화벽 두 겹</h3>
+<p>웹 손님(80, 443번 문)이 들어올 수 있게 <strong>두 군데</strong>를 열어야 한다. 하나만 열면 안 된다.</p>
+<p><strong>① Oracle 쪽 문 (보안 목록)</strong></p>
+<ol><li>인스턴스 상세 → <strong>서브넷</strong> 링크 → <strong>보안 목록(Security Lists)</strong> → Default Security List</li><li><strong>수신 규칙 추가</strong> 두 개:<ul><li>소스 CIDR <code>0.0.0.0/0</code>, IP 프로토콜 TCP, 대상 포트 <code>80</code></li><li>소스 CIDR <code>0.0.0.0/0</code>, IP 프로토콜 TCP, 대상 포트 <code>443</code></li></ul></li></ol>
+<p><strong>② 컴퓨터 안쪽 문 (Ubuntu 방화벽)</strong> — 3-5에서 접속한 뒤 실행</p>
+<h3>3-5. 들어가 보기 (접속)</h3>
+<p>내 컴퓨터 터미널(Windows는 PowerShell)에서:</p>
+<div class="code"><button class="copy" type="button">복사</button><pre><code>chmod 600 ~/Downloads/ssh-key-xxxx.key            # Windows는 이 줄 생략
+ssh -i ~/Downloads/ssh-key-xxxx.key ubuntu@152.67.12.34</code></pre></div>
+<p>"yes" 를 입력하면 <code>ubuntu@fgc-server:~$</code> 가 보인다. 들어온 것이다. 🎉</p>
+<p>이제 <strong>컴퓨터 안쪽 문</strong>을 연다 (Oracle의 Ubuntu 이미지는 기본으로 막혀 있다):</p>
+<div class="code"><button class="copy" type="button">복사</button><pre><code>sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
+sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
+sudo netfilter-persistent save</code></pre></div>
+<p>필요한 프로그램 설치 (Docker, Java, Git):</p>
+<div class="code"><button class="copy" type="button">복사</button><pre><code>sudo apt update &amp;&amp; sudo apt install -y git openjdk-21-jdk-headless
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker ubuntu &amp;&amp; exit            # 한 번 나갔다가 다시 ssh 로 들어온다</code></pre></div>
+<h3>⚠️ 무료 VM의 위험 (꼭 알기)</h3>
+<ul><li>Oracle은 <strong>7일 동안 너무 한가한 무료 컴퓨터를 회수</strong>할 수 있다. 우리 서버는 가벼워서 해당될 수 있다.</li><li>2026년에 무료 할당량이 줄었다는 보도도 있다 (공식 확인 안 됨).</li><li>그래서: 매일 백업(5-4)을 켜 두고, <strong>가족이 이 알림에 정말 의존하게 되면 유료 VPS로 옮긴다</strong> (ADR-0005).</li></ul>
+</section>
+<section class="step" id="s5"><h2>4. 도메인 준비 (🏠 집 주소)</h2>
+<p>HTTPS(편지 봉인)를 쓰려면 숫자 IP 말고 <strong>이름 주소</strong>가 필요하다. 두 가지 방법 중 하나를 고른다.</p>
+<h3>방법 A — 무료: DuckDNS (연습용 추천)</h3>
+<ol><li><a href="https://www.duckdns.org" target="_blank" rel="noopener">https://www.duckdns.org</a> → Google/GitHub 계정으로 로그인</li><li>sub domain 칸에 <code>my-fgc</code> 입력 → <strong>add domain</strong> → <code>my-fgc.duckdns.org</code> 가 생긴다</li><li><strong>current ip</strong> 칸에 3-3에서 적은 <strong>VM 공용 IP</strong> 입력 → <strong>update ip</strong></li><li>끝. (화면 위의 <code>token</code> 은 DuckDNS용 비밀이니 공유하지 않는다)</li></ol>
+<h3>방법 B — 유료: 내 도메인 사기</h3>
+<ol><li>Cloudflare Registrar, 가비아, 후이즈 등에서 도메인 구입 (<code>.com</code> 등, 연 단위 요금 — 구입 시점 가격 확인)</li><li>그 회사의 <strong>DNS 관리</strong> 화면에서 레코드 추가:<ul><li>종류 <code>A</code>, 이름 <code>fgc</code>(→ <code>fgc.내도메인.com</code>) 또는 <code>@</code>, 값 = <strong>VM 공용 IP</strong></li><li>Cloudflare 를 쓰면 처음에는 <strong>프록시(주황 구름)를 끄고</strong> "DNS only"(회색 구름)로 둔다. 인증서 발급이 꼬이지 않는다.</li></ul></li></ol>
+<h3>확인</h3>
+<p>내 컴퓨터에서:</p>
+<div class="code"><button class="copy" type="button">복사</button><pre><code>nslookup my-fgc.duckdns.org</code></pre></div>
+<p>VM 공용 IP가 나오면 성공이다. 안 나오면 5~30분 기다린다.</p>
+</section>
+<section class="step" id="s6"><h2>5. 서버에 모두 꽂기 (이삿짐 넣기)</h2>
+<p>VM 에 ssh 로 들어간 상태에서 진행한다.</p>
+<h3>5-1. 코드 가져오기</h3>
+<div class="code"><button class="copy" type="button">복사</button><pre><code>sudo mkdir -p /opt/fgc &amp;&amp; sudo chown ubuntu /opt/fgc
+git clone https://github.com/zzinooks/atest.git /opt/fgc
+cd /opt/fgc &amp;&amp; git checkout ccr-ac5d9c38-9bi9je</code></pre></div>
+<p>(비공개 저장소이면 GitHub 개인 액세스 토큰이나 SSH 키가 필요하다.)</p>
+<h3>5-2. 서버 프로그램 만들기</h3>
+<div class="code"><button class="copy" type="button">복사</button><pre><code>cd /opt/fgc/backend &amp;&amp; ./gradlew bootJar       # 처음 한 번은 몇 분 걸린다</code></pre></div>
+<h3>5-3. 비밀 넣기</h3>
+<p><strong>① Firebase 인감도장 옮기기</strong> — 이건 <strong>내 컴퓨터</strong> 터미널에서 실행한다:</p>
+<div class="code"><button class="copy" type="button">복사</button><pre><code>scp -i ~/Downloads/ssh-key-xxxx.key ~/안전한폴더/family-glucose-care-firebase-adminsdk-xxxx.json \
+ubuntu@152.67.12.34:/opt/fgc/deploy/fcm.json.tmp</code></pre></div>
+<p><strong>② VM 에서 정리:</strong></p>
+<div class="code"><button class="copy" type="button">복사</button><pre><code>cd /opt/fgc/deploy
+mkdir -p secrets &amp;&amp; mv fcm.json.tmp secrets/fcm.json &amp;&amp; chmod 600 secrets/fcm.json
+cp .env.example .env &amp;&amp; chmod 600 .env
+python3 -c &quot;import secrets;print(&#x27;JWT  =&#x27;, secrets.token_urlsafe(48))&quot;
+python3 -c &quot;import secrets,base64;print(&#x27;ENC  =&#x27;, base64.b64encode(secrets.token_bytes(32)).decode())&quot;
+python3 -c &quot;import secrets;print(&#x27;DBPW =&#x27;, secrets.token_urlsafe(24))&quot;
+nano .env</code></pre></div>
+<p><strong>③ <code>.env</code> 채우기</strong> (<code>=</code> 뒤에 붙여 넣기, 따옴표 없이):</p>
+<div class="table"><table><thead><tr><th>항목</th><th>넣을 값</th></tr></thead><tbody><tr><td><code>FGC_DOMAIN</code></td><td><code>my-fgc.duckdns.org</code> (4장)</td></tr><tr><td><code>FGC_DB_PASSWORD</code></td><td>위에서 나온 DBPW</td></tr><tr><td><code>FGC_JWT_SECRET</code></td><td>위에서 나온 JWT</td></tr><tr><td><code>FGC_ENCRYPTION_KEY</code></td><td>위에서 나온 ENC</td></tr><tr><td><code>NOTION_TOKEN</code></td><td><code>ntn_...</code> (2-2)</td></tr><tr><td><code>NOTION_DAILY_DB_ID</code></td><td>일별 DB 32글자 (2-5)</td></tr><tr><td><code>NOTION_WEEKLY_DB_ID</code></td><td>주간 DB 32글자 (2-5)</td></tr></tbody></table></div>
+<p>저장: <code>Ctrl+O</code> → Enter → <code>Ctrl+X</code>.</p>
+<aside class="note warn"><p>⚠️ <strong><code>FGC_ENCRYPTION_KEY</code> 는 한 번 정하면 바꾸지 않는다.</strong> 바꾸면 이미 저장된 데이터 소스 비밀번호를 풀 수 없게 된다. <code>.env</code> 파일을 안전한 곳에 따로 백업해 둔다.</p><p>Firebase 없이 먼저 해 보고 싶으면: <code>docker-compose.yml</code> 에서 <code>FGC_FCM_CREDENTIALS</code> 줄과 그 아래 <code>volumes: [ &quot;./secrets/fcm.json...&quot; ]</code> 줄을 지운다. 그러면 dev-outbox 로 동작하며, <strong>휴대폰으로 알림이 가지 않는다</strong>.</p></aside>
+<h3>5-4. 켜기</h3>
+<div class="code"><button class="copy" type="button">복사</button><pre><code>cd /opt/fgc/deploy &amp;&amp; docker compose up -d --build
+docker compose logs -f backend      # &quot;Started FgcApplication&quot; 과 &quot;Push provider: FCM&quot; 이 보이면 OK (Ctrl+C 로 빠져나오기)</code></pre></div>
+<p>내 컴퓨터 브라우저에서 <code>https://my-fgc.duckdns.org/actuator/health</code> → <code>{&quot;status&quot;:&quot;UP&quot;...}</code> 이 보이면 <strong>이사 완료</strong> 🎉 주소창에 자물쇠 🔒 가 보이면 HTTPS도 성공이다 (Caddy가 인증서를 자동으로 받아 온다).</p>
+<p><strong>매일 백업 켜기:</strong></p>
+<div class="code"><button class="copy" type="button">복사</button><pre><code>crontab -e      # 맨 아래에 다음 줄 추가 후 저장
+40 3 * * * /opt/fgc/deploy/backup.sh &gt;&gt; /opt/fgc/deploy/backup.log 2&gt;&amp;1</code></pre></div>
+<h3>5-5. 잘 안 될 때</h3>
+<div class="table"><table><thead><tr><th>증상</th><th>원인 → 해결</th></tr></thead><tbody><tr><td>브라우저가 계속 로딩만 함</td><td>방화벽 두 겹 중 하나가 닫힘 → 3-4 ①② 다시 확인</td></tr><tr><td>자물쇠 없이 인증서 오류</td><td>도메인이 아직 VM IP를 가리키지 않음 → 4장 <code>nslookup</code> 확인 후 <code>docker compose restart caddy</code></td></tr><tr><td>로그에 <code>FGC_JWT_SECRET must be set</code></td><td><code>.env</code> 에 값이 비어 있음</td></tr><tr><td>로그에 <code>Push provider: dev-outbox</code></td><td><code>secrets/fcm.json</code> 이 없거나 경로가 틀림</td></tr><tr><td>Notion 요약이 안 써짐, 로그에 <code>HTTP 404</code></td><td>2-4 "연결 추가"를 안 했음</td></tr><tr><td>Notion 로그에 <code>HTTP 400</code></td><td>속성 이름·종류가 표와 다름 (대소문자 포함)</td></tr><tr><td>Notion 로그에 <code>HTTP 401</code></td><td>토큰이 틀렸거나 새로 고침 후 옛 값 사용</td></tr></tbody></table></div>
+</section>
+<section class="step" id="s7"><h2>6. 앱 만들기 (휴대폰에 설치)</h2>
+<p>이제 <code>dl.google.com</code> 이 허용되어 앱도 만들 수 있다.</p>
+<ol><li><code>android/app/google-services.json</code> 이 있는지 확인 (1-3)</li><li>내 서버 주소를 넣어 빌드:<div class="code"><button class="copy" type="button">복사</button><pre><code>cd android &amp;&amp; ./gradlew :app:assembleRelease -Pfgc.baseUrl=https://my-fgc.duckdns.org</code></pre></div><ul><li>연습용으로는 Android Studio 의 ▶ 실행(디버그)도 된다. 이 경우 기본 주소는 PC의 로컬 서버(<code>10.0.2.2:8080</code>)다.</li></ul></li><li>휴대폰에 설치 → 가입 → 설정 → "환자로 시작하기" → 데이터 연결</li><li>가족 휴대폰에도 설치 → 가입 → 환자가 만든 <strong>초대 코드</strong> 입력</li><li><strong>알림 시험</strong>: 환자 설정에서 "낮음" 기준을 잠깐 높게(예: 150) 저장 → 가족 휴대폰에 "저혈당" 알림이 오는지 확인 → <strong>꼭 원래 값으로 되돌리기</strong></li></ol>
+<aside class="note"><p>Google Play 에 올리려면 개발자 등록비 US$25(1회)가 든다. 가족끼리 쓸 때는 APK 파일을 직접 설치해도 된다.</p></aside>
+</section>
+<section class="step" id="s8"><h2>7. 마지막 체크리스트</h2>
+<ul class="checklist"><li><label><input type="checkbox" data-k="c1"><span>Firebase 프로젝트 생성, 패키지 <code>com.fgc.app</code> 으로 앱 등록</span></label></li><li><label><input type="checkbox" data-k="c2"><span><code>google-services.json</code> → <code>android/app/</code> (커밋 안 함)</span></label></li><li><label><input type="checkbox" data-k="c3"><span>서비스 계정 키 → 서버 <code>deploy/secrets/fcm.json</code> (권한 600)</span></label></li><li><label><input type="checkbox" data-k="c4"><span>Notion 통합 생성, 토큰 복사</span></label></li><li><label><input type="checkbox" data-k="c5"><span>Notion 일별·주간 DB 생성, 속성 13개 이름 일치</span></label></li><li><label><input type="checkbox" data-k="c6"><span>두 DB 모두 통합 "연결 추가"</span></label></li><li><label><input type="checkbox" data-k="c7"><span>DB ID 두 개 복사</span></label></li><li><label><input type="checkbox" data-k="c8"><span>Oracle VM 생성 (Always Free 적격 확인), SSH 키 보관</span></label></li><li><label><input type="checkbox" data-k="c9"><span>방화벽 두 겹(보안 목록 + iptables) 80/443 열기</span></label></li><li><label><input type="checkbox" data-k="c10"><span>도메인 → VM IP (<code>nslookup</code> 확인)</span></label></li><li><label><input type="checkbox" data-k="c11"><span><code>.env</code> 채움, <code>.env</code> 별도 백업</span></label></li><li><label><input type="checkbox" data-k="c12"><span><code>https://도메인/actuator/health</code> UP + 자물쇠</span></label></li><li><label><input type="checkbox" data-k="c13"><span>로그에 <code>Push provider: FCM</code></span></label></li><li><label><input type="checkbox" data-k="c14"><span>백업 cron 등록</span></label></li><li><label><input type="checkbox" data-k="c15"><span>가족 휴대폰으로 실제 알림 수신 확인</span></label></li></ul>
+</section>
+<section class="step" id="s9"><h2>변경 이력</h2>
+<div class="table"><table><thead><tr><th>일자</th><th>변경 내용</th></tr></thead><tbody><tr><td>2026-11-05</td><td>최초 작성. backend 에 Gradle Wrapper 추가 (<code>./gradlew</code> 사용 가능)</td></tr></tbody></table></div>
+</section>
+  </main>
+</div>
+<script>
+(function () {
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  // 복사 버튼
+  document.querySelectorAll('.copy').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var text = b.nextElementSibling.innerText;
+      var done = function () { b.textContent = '복사됨'; setTimeout(function () { b.textContent = '복사'; }, 1500); };
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () {});
+    });
+  });
+  // 체크리스트 저장
+  var boxes = document.querySelectorAll('.checklist input');
+  function progress() {
+    var n = 0; boxes.forEach(function (x) { if (x.checked) n++; });
+    document.getElementById('progText').textContent = '체크리스트 ' + n + ' / ' + boxes.length;
+    document.getElementById('progBar').style.width = (boxes.length ? n / boxes.length * 100 : 0) + '%';
+  }
+  boxes.forEach(function (x) {
+    x.checked = store.get('fgc-setup-' + x.dataset.k) === '1';
+    x.addEventListener('change', function () { store.set('fgc-setup-' + x.dataset.k, x.checked ? '1' : '0'); progress(); });
+  });
+  progress();
+  // 모바일 목차
+  document.getElementById('tocToggle').addEventListener('click', function () {
+    var n = document.getElementById('nav'); n.classList.toggle('open');
+    this.textContent = n.classList.contains('open') ? '목차 닫기' : '목차 보기';
+  });
+  // 테마 전환
+  var saved = store.get('fgc-theme'); if (saved) document.documentElement.dataset.theme = saved;
+  document.getElementById('themeBtn').addEventListener('click', function () {
+    var dark = document.documentElement.dataset.theme
+      ? document.documentElement.dataset.theme === 'dark'
+      : matchMedia('(prefers-color-scheme: dark)').matches;
+    var next = dark ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next; store.set('fgc-theme', next);
+  });
+  // 현재 위치 표시
+  var links = document.querySelectorAll('nav li a');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting) links.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id); });
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    document.querySelectorAll('section.step').forEach(function (s) { io.observe(s); });
+  }
+})();
+</script>
+</body>
+</html>
